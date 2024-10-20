@@ -1,6 +1,16 @@
 #!/bin/sh
 set -e
 
+cleanup() {
+    # Remove the SSH key
+    rm -f ~/.ssh/id_rsa
+    # Clear known_hosts file
+    > ~/.ssh/known_hosts
+}
+
+# Set up cleanup to run on script exit
+trap cleanup EXIT
+
 # Check if required environment variables are set
 if [ -z "$SSH_USERNAME" ] || [ -z "$SSH_HOST" ]; then
     echo "Error: SSH_USERNAME and SSH_HOST must be set"
@@ -11,9 +21,16 @@ fi
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 
-# Set correct permissions for SSH key if it exists
-if [ -f ~/.ssh/id_rsa ]; then
+# Handle SSH key
+if [ -n "$SSH_PRIVATE_KEY" ]; then
+    echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
+elif [ -f /run/secrets/ssh_private_key ]; then
+    cp /run/secrets/ssh_private_key ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+elif [ ! -f ~/.ssh/id_rsa ]; then
+    echo "Error: No SSH key provided. Please set SSH_PRIVATE_KEY or mount a key to /run/secrets/ssh_private_key"
+    exit 1
 fi
 
 # Add host key to known hosts
