@@ -40,4 +40,4 @@ ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 export DOCKER_HOST="ssh://${SSH_USERNAME}@${SSH_HOST}"
 
 # Execute Docker command
-exec docker "$@"
+exec docker $@
