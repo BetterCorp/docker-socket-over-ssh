@@ -6,6 +6,8 @@ cleanup() {
     rm -f ~/.ssh/id_rsa
     # Clear known_hosts file
     > ~/.ssh/known_hosts
+    # Cleanup docker token
+    rm -rfv ~/.docker
 }
 
 # Set up cleanup to run on script exit
@@ -17,11 +19,19 @@ if [ -z "$SSH_USERNAME" ] || [ -z "$SSH_HOST" ]; then
     exit 1
 fi
 
-# Set up SSH directory
+# Setup the docker
+mkdir -p ~/.docker
+chmod 700 ~/.docker
+
+if [ -n "$DOCKER_CONFIG" ]; then
+    echo "$DOCKER_CONFIG" > ~/.docker/config.json
+    chmod 600 ~/.docker/config.json
+fi
+
+# Set up SSH
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 
-# Handle SSH key
 if [ -n "$SSH_PRIVATE_KEY" ]; then
     echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
